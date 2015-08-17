@@ -1,5 +1,5 @@
 # lang-speed-tester
-### How to work
+### How to use
 
 Compile available languages:
 ```
