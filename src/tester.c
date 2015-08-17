@@ -5,34 +5,31 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <dirent.h>
 #include <time.h>
 #include <unistd.h>
 
-struct timeval tv;
-
 uint64_t get_time( void ) {
+    static struct timeval tv;
     gettimeofday( &tv, 0 );
     return ( tv.tv_sec * 1000000L + tv.tv_usec );
 }
 
 int main( int argc, char * argv[] ) {
     unsigned int max = 0, iterations = 100;
+    size_t j, term_size, counter = 1;
     const size_t max_seconds = 10;
     clock_t c0, c1, sum_c;
     struct dirent * dp;
     char buffer[256];
-    size_t i, j, len;
+    struct winsize w;
     uint64_t t0, t1;
     double sum_t;
     DIR * dir;
 
-    iterations = atoi( argv[1] );
-    for ( i = 2; i < argc; i++ ) {
-        len = strlen( argv[i] ) - 2;
-        if ( max < len ) {
-            max = (unsigned int) len;
-        }
+    if ( argc > 2 ) {
+        iterations = atoi( argv[1] );
     }
     fprintf( stdout, "[info] iteration count = %d\n", iterations );
     dir = opendir( "./bin/" );
@@ -40,6 +37,13 @@ int main( int argc, char * argv[] ) {
         perror( "opendir" );
         exit( EXIT_FAILURE );
     }
+    while ( ( dp = readdir( dir ) ) != NULL ) {
+        size_t len = strlen( dp->d_name );
+        if ( len > max ) {
+            max = len;
+        }
+    }
+    rewinddir( dir );
     while ( ( dp = readdir( dir ) ) != NULL ) {
         if ( dp->d_name[0] == '.' ) {
             continue;
@@ -52,9 +56,22 @@ int main( int argc, char * argv[] ) {
             sleep( 1 );
         }
         sum_c = sum_t = 0;
-        fprintf( stdout, "[DONE]\r > %lu: prog '%*s' ", i - 1, max, dp->d_name );
-        fflush( stdout );
+        fprintf( stdout, "[DONE]" );
         for ( j = 0; j < iterations; j++ ) {
+            ioctl( 0, TIOCGWINSZ, &w );
+            term_size = w.ws_col - 18;
+            fprintf( stdout, "\rprogress: [" );
+            uint8_t current = ( j * term_size ) / iterations;
+            uint8_t progress = ( j * 100 ) / iterations + 1;
+            for ( size_t i = 0; i < term_size; i++ ) {
+                if ( i <= current + 1 ) {
+                    fputc( '#', stdout );
+                } else {
+                    fputc( '_', stdout );
+                }
+            }
+            fprintf( stdout, "] %3u %%", progress );
+            fflush( stdout );
             t0 = get_time();
             c0 = clock();
             system( buffer );
@@ -63,8 +80,12 @@ int main( int argc, char * argv[] ) {
             sum_t += ( t1 - t0 );
             sum_c += ( c1 - c0 );
         }
-        fprintf( stdout, "avg cpu time = %lf cycle, avg time = %lf µs\n",
-                 (double) sum_c / iterations, (double) sum_t / iterations );
+        // clear line
+        fprintf( stdout, "%c[2K", 27 );
+        fprintf( stdout, "\r > %lu: prog '%*s' avg cpu time = %.4lf cycle, avg time = %.4lf µs\n",
+            counter, max, dp->d_name, (double) sum_c / iterations, (double) sum_t / iterations );
+        counter++;
     }
-    return 0;
+    closedir( dir );
+    return EXIT_SUCCESS;
 }
