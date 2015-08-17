@@ -5,7 +5,6 @@ echo "-------------------------"
 echo " Operating system        :" $(cat /etc/os-release |
     grep -i PRETTY_NAME= | sed 's/PRETTY_NAME=//g' | sed 's/"//g')
 echo " Kernel name and version :" $(uname -sr) [ $(uname -m) ]
-echo
 echo "-------------------------"
 echo "  Processor information"
 echo "-------------------------"
@@ -14,7 +13,6 @@ echo -n " Processor type          :" $(lscpu | grep -i Model\ name |
     sed '$!N; /^\(.*\)\n\1$/!P; D')
 echo
 echo " Clocked at              :" $(lscpu | grep -i CPU\ MHz | sed 's/CPU MHz://g') MHz
-echo
 echo "-------------------------"
 echo "  Compilers information"
 echo "-------------------------"
@@ -25,8 +23,3 @@ echo " LLVM D Compiler         :" $(ldc --version | head -n1)
 echo " GNU D Compiler          :" $(gdc --version | head -n1)
 echo " Rust Language           :" $(rustc --version)
 echo " Nim Language            :" $(nim -h | head -n1)
-echo
-echo "-------------------------"
-echo "   Start language test"
-echo "-------------------------"
-echo

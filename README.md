@@ -1,7 +1,7 @@
 # lang-speed-tester
 ### How to use
 
-Compile available languages:
+Compile available languages
 ```
 $ make gcc g++ clang rust ...
 ```
