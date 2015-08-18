@@ -28,10 +28,10 @@ int main( int argc, char * argv[] ) {
     double sum_t;
     DIR * dir;
 
-    if ( argc > 2 ) {
-        iterations = atoi( argv[1] );
+    if ( argc > 1 ) {
+        iterations = atol( argv[1] );
     }
-    fprintf( stdout, "[info] iteration count = %d\n", iterations );
+    fprintf( stdout, "[info] iteration count = %u\n", iterations );
     dir = opendir( "./bin/" );
     if ( dir == NULL ) {
         perror( "opendir" );
@@ -67,7 +67,7 @@ int main( int argc, char * argv[] ) {
                 if ( i <= current + 1 ) {
                     fputc( '#', stdout );
                 } else {
-                    fputc( '_', stdout );
+                    fputc( '-', stdout );
                 }
             }
             fprintf( stdout, "] %3u %%", progress );
