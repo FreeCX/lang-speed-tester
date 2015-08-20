@@ -4,6 +4,7 @@ LDCFLAGS=-O3 -release
 GDCFLAGS=-O3
 RUSTFLAGS=-C opt-level=3 -C debuginfo=0 -Z no-landing-pads
 NIMFLAGS=c -d:release --checks=off
+GOFLAGS=build
 CC=gcc
 CXX=g++
 CLANGCC=clang
@@ -13,10 +14,14 @@ DMD=dmd
 LDC=ldc
 GDC=gdc
 NIM=nim
+GO=go
 
 tester:
 	mkdir -p bin
 	$(CC) $(CFLAGS) ./src/tester.c -o tester
+go: tester
+	GOPATH=$(shell pwd) $(GO) $(GOFLAGS) go_lang
+	mv go_lang ./bin/
 gcc: tester
 	$(CC) $(CFLAGS) ./src/c_lang.c -o ./bin/c_gcc
 g++: tester
